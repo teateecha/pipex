@@ -6,20 +6,23 @@ LIBFT_DIR = libft
 LIBFT_A = $(LIBFT_DIR)/libft.a
 SRC_DIR = src
 OBJ_DIR = obj
+
 vpath %.c $(foreach dir, $(SRC_DIR), $(dir):)
 SRCS = main.c
 
-OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:%.c=%.o))
-OBJS = $(OBJ_DIR)/$(SRC:.c=.o)
+#OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
+OBJS = $(OBJ_DIR)/$(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(LIBFT_A)
-	make -C $(LIBFT_DIR)
+$(LIBFT_A):
+	$(MAKE) -C $(LIBFT_DIR)
 
 $(NAME): $(LIBFT_A) $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBFT_A) -o $(NAME)
-%.o: %.c
+
+#build only if OBJ_DIR exists
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) -I$(LIBFT_DIR) -c $< -o $@
 
 $(OBJ_DIR):
@@ -27,11 +30,11 @@ $(OBJ_DIR):
 
 clean:
 	rm -f $(OBJS)
-	make -C $(LIBFT_DIR) clean
+	$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
 	rm -f $(NAME)
-	make -C $(LIBFT_DIR) fclean
+	$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
