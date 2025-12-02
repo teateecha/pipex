@@ -22,6 +22,9 @@ $(NAME): $(LIBFT_A) $(OBJS)
 %.o: %.c
 	$(CC) -I$(LIBFT_DIR) -c $< -o $@
 
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
 clean:
 	rm -f $(OBJS)
 	make -C $(LIBFT_DIR) clean
