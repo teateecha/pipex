@@ -1,12 +1,15 @@
 NAME = pipex
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -I$(LIBFT_DIR)
 
 LIBFT_DIR = libft
 LIBFT_A = $(LIBFT_DIR)/libft.a
 SRC_DIR = src
 OBJ_DIR = obj
+vpath %.c $(foreach dir, $(SRC_DIR), $(dir):)
 SRCS = main.c
+
+OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:%.c=%.o))
 OBJS = $(OBJ_DIR)/$(SRC:.c=.o)
 
 all: $(NAME)
@@ -15,9 +18,9 @@ $(LIBFT_A)
 	make -C $(LIBFT_DIR)
 
 $(NAME): $(LIBFT_A) $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBFT_A) -I$(LIBFT_DIR) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT_A) -o $(NAME)
 %.o: %.c
-	$$(CC) -I$(LIBFT_DIR) -c $< -o $@
+	$(CC) -I$(LIBFT_DIR) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)
