@@ -42,17 +42,18 @@ static void processs()
 	return ;
 }
 
+
 /*creates a pipe,*/
-int	main(int argc, char **argv)
+int	main(int argc, char **argv, char **envp)
 {
 	int			fd[2];
 	int			file1;
-	t_family	data;
 
 
 	if (-1 == pipe(fd))
 		return(ft_error);
 	/*check input*/
+	parent(argv, fd, data);
 	// processes(argv);/*forking function: fork, read the cmds and infiles*/
 	return (0);
 }
