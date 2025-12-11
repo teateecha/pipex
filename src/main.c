@@ -6,13 +6,22 @@
 #include <sys/wait.h>/*for WIFEXITED*/
 #include "../libft/libft.h"
 
-static char	**find_arg(char *cmd)
+static char	**find_arg(char *cmd, char *append)
 {
 	char	**arguments;
+	int		i;
 
 	arguments = ft_split(cmd, ' ');
 	if (NULL == arguments)
 		return (NULL);
+	if (append)
+	{
+		i = 0;
+		while (arguments[i])
+			i++;
+		arguments[i] = append;
+		arguments[i + 1] = NULL;
+	}
 	return (arguments);
 }
 
@@ -21,7 +30,7 @@ static int	do_child1(int fd[2], char **argv)
 {
 	char	**argu;
 
-	argu = find_arg(argv[2]);
+	argu = find_arg(argv[2], argv[1]);
 	if (NULL == argu)
 		return (EXIT_FAILURE);
 	if (0 > dup2(fd[1], STDOUT_FILENO))
@@ -38,7 +47,7 @@ static int	do_child2(int fd[2], char **argv)
 	int		fd_file;
 	char	**argu;
 
-	argu = find_arg(argv[3]);
+	argu = find_arg(argv[3], NULL);
 	if (0 > dup2(fd[0], STDIN_FILENO))
 		return (EXIT_FAILURE);
 	fd_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -50,7 +59,7 @@ static int	do_child2(int fd[2], char **argv)
 	close(fd[0]);
 	close(fd[1]);
 	execvp(argu[0], argu);
-	perror("execvp")
+	perror("execvp");
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
