@@ -1,59 +1,80 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
-#include <sys/wait.h>
-#include "../libpipex.h"
+#include <fcntl.h>/*for open*/
+#include <time.h>
+#include <sys/wait.h>/*for WIFEXITED*/
+#include "../libft/libft.h"
 
-static int	ft_exit()
-
-static void	*ft_error()
-
-static void	check_input()
+static char	**find_arg(char *cmd)
 {
-	// if (fail)
-	// 	ft_exit();
-}
+	char	**arguments;
 
-read_execute_write(int fdin,int fdout,char *cmd,char **arguments)
-/*close the other one, read from in, close it, execute it,close the other one  write it to out , close the out... in and out are different for parent and child*/
-
-static void processs()
-{
-	int		id;
-	char	**arr;
-	int		fd;
-
-	id = fork();
-	if (-1 == id)
-		// ft_exit(..., fail);
-	if (0 != id)/*wait for child,*/
-		wait(NULL);
-	arr = ft_split(argv[2], ' ');
-	
-	ft_free(arr);
-	/*parent and child: split the cmds and arguments,*/
-	if (0 == id)/*child: execute cmd with the arguments on the file*/
-		fd = 1;
-	else/*parent: read form stdout, exec on what i read from stdout*/
-		fd = 0;
-	// read_execute_write(fdin, fdout, cmd, arguments)
-	ft_exti();
-	return ;
+	arguments = ft_split(cmd, ' ');
+	if (NULL == arguments)
+		return (NULL);
+	return (arguments);
 }
 
 
-/*creates a pipe,*/
-int	main(int argc, char **argv, char **envp)
+static int	do_child1(int fd[2], char **argv)
 {
-	int			fd[2];
-	int			file1;
+	char	**argu;
 
+	argu = find_arg(argv[2]);
+	if (NULL == argu)
+		return (EXIT_FAILURE);
+	if (0 > dup2(fd[1], STDOUT_FILENO))
+		return (EXIT_FAILURE);
+	close(fd[0]);
+	close(fd[1]);
+	execvp(argu[0], argu);
+	perror("execvp");
+	return (EXIT_FAILURE);/*todo exit*/
+}
 
-	if (-1 == pipe(fd))
-		return(ft_error);
-	/*check input*/
-	parent(argv, fd, data);
-	// processes(argv);/*forking function: fork, read the cmds and infiles*/
+static int	do_child2(int fd[2], char **argv)
+{
+	int		fd_file;
+	char	**argu;
+
+	argu = find_arg(argv[3]);
+	if (0 > dup2(fd[0], STDIN_FILENO))
+		return (EXIT_FAILURE);
+	fd_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (0 > fd_file)
+		return (EXIT_FAILURE);
+	if (0 > dup2(fd_file, STDOUT_FILENO))
+		return (EXIT_FAILURE);
+	close(fd_file);
+	close(fd[0]);
+	close(fd[1]);
+	execvp(argu[0], argu);
+	perror("execvp")
+	return (EXIT_FAILURE);/*todo exit*/
+}
+
+int	main(int argc, char **argv)
+{
+	int	pid1;
+	int	pid2;
+	int	fd[2];
+
+	if (0 < pipe(fd))
+		return (EXIT_FAILURE);
+	pid1 = fork();
+	if (0 > pid1)
+		return (EXIT_FAILURE);
+	if (0 == pid1)
+		return (do_child1(fd, argv));
+	pid2 = fork();
+	if (0 > pid2)
+		return (EXIT_FAILURE);
+	if (0 == pid2)
+		return (do_child2(fd, argv));
+	close(fd[0]);
+	close(fd[1]);
+	waitpid(pid1, NULL, 0);
+	waitpid(pid2, NULL, 0);
 	return (0);
 }
