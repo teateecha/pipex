@@ -1,5 +1,7 @@
 #ifndef LIBPIPEX_H
 # define LIBPIPEX_H
 
-void	parent(char **argv, int fd[2], t_family data);
+char	**find_arg(char *cmd, char *append);
+char	*prefix_str(char *word, char prefix);
+
 #endif

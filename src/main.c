@@ -1,30 +1,46 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <unistd.h>/*for access*/
 #include <fcntl.h>/*for open*/
 #include <time.h>
 #include <sys/wait.h>/*for WIFEXITED*/
 #include "../libft/libft.h"
+#include "../libpipex.h"
 
-static char	**find_arg(char *cmd, char *append)
+extern char	**environ;
+
+static char	*find_path(char *cmd)
 {
-	char	**arguments;
-	int		i;
+	char	**path;
+	char	*str;
+	int	i;
 
-	arguments = ft_split(cmd, ' ');
-	if (NULL == arguments)
-		return (NULL);
-	if (append)
+	i = 0;
+	while (ft_memcmp(environ[i], "PATH", 4))
+		i++;
+	str = ft_memchr(environ[i - 1], '/', 10);
+	path = ft_split(str, ':');
+	if (NULL == path)
+		return(NULL);
+	i = -1;
+	while (path[++i])
 	{
-		i = 0;
-		while (arguments[i])
-			i++;
-		arguments[i] = append;
-		arguments[i + 1] = NULL;
+		cmd = prefix_str(cmd, '/');
+		str = ft_strjoin(path[i], cmd);
+		if (NULL == str)
+			return (NULL);
+		if (0 == access(cmd, X_OK))
+		{
+			ft_free_arr(path);
+			return (str);
+		}
+		free(str);
+		str = NULL;
 	}
-	return (arguments);
+	ft_free_arr(path);
+	path = NULL;
+	return (NULL);
 }
-
 
 static int	do_child1(int fd[2], char **argv)
 {
@@ -37,8 +53,8 @@ static int	do_child1(int fd[2], char **argv)
 		return (EXIT_FAILURE);
 	close(fd[0]);
 	close(fd[1]);
-	execvp(argu[0], argu);
-	perror("execvp");
+	execve(find_path(argu[0]), argu, environ);
+	perror("execve");
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
@@ -58,8 +74,8 @@ static int	do_child2(int fd[2], char **argv)
 	close(fd_file);
 	close(fd[0]);
 	close(fd[1]);
-	execvp(argu[0], argu);
-	perror("execvp");
+	execve(find_path(argu[0]), argu, environ);
+	perror("execve");
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
