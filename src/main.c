@@ -11,39 +11,46 @@ extern char	**environ;
 
 static char	*find_path(char *cmd)
 {
-	char	**path;
-	char	*str;
-	int	i;
+	char    **paths;
+	char    *path_env;
+	char    *candidate;
+	int     i;
 
 	i = 0;
-	while (ft_memcmp(environ[i], "PATH", 4))
+	while (environ[i] && ft_memcmp(environ[i], "PATH=", 5) != 0)
 		i++;
-	str = ft_memchr(environ[i - 1], '/', ft_strlen(environ[i - 1]));
-	path = ft_split(str, ':');
-	if (NULL == path)
-		return(NULL);
-	i = -1;
-	while (path[++i])
+	if (!environ[i])
+		return (NULL);
+	path_env = environ[i] + ft_strlen("PATH=");
+	paths = ft_split(path_env, ':');
+	if (NULL == paths)
+		return (NULL);
+	i = 0;
+	while (paths[i])
 	{
-		str = ft_strjoinjoin(path[i], "/", cmd);
-		if (NULL == str)
-			return (NULL);
-		if (0 == access(cmd, X_OK))
+		candidate = ft_strjoinjoin(paths[i], "/", cmd);
+		if (NULL == candidate)
 		{
-			ft_free_arr(path);
-			return (str);
+			ft_free_arr(paths);
+			return (NULL);
 		}
-		free(str);
-		str = NULL;
+		if (access(candidate, X_OK) == 0)
+		{
+			ft_free_arr(paths);
+			return (candidate);
+		}
+		free(candidate);
+		candidate = NULL;
+		i++;
 	}
-	ft_free_arr(path);
-	path = NULL;
+	ft_free_arr(paths);
 	return (NULL);
 }
 
 static int	do_child1(int fd[2], char **argv)
 {
 	char	**argu;
+	char	*cmd_path;
 
 	argu = find_arg(argv[2], argv[1]);
 	if (NULL == argu)
@@ -52,8 +59,15 @@ static int	do_child1(int fd[2], char **argv)
 		return (EXIT_FAILURE);
 	close(fd[0]);
 	close(fd[1]);
-	execve(find_path(argu[0]), argu, environ);
+	cmd_path = find_path(argu[0]);
+	if (NULL == cmd_path)
+	{
+		perror("find_path");
+		return (EXIT_FAILURE);
+	}
+	execve(cmd_path, argu, environ);
 	perror("execve");
+	free(cmd_path);
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
@@ -61,6 +75,7 @@ static int	do_child2(int fd[2], char **argv)
 {
 	int		fd_file;
 	char	**argu;
+	char	*cmd_path;
 
 	argu = find_arg(argv[3], NULL);
 	if (0 > dup2(fd[0], STDIN_FILENO))
@@ -73,8 +88,15 @@ static int	do_child2(int fd[2], char **argv)
 	close(fd_file);
 	close(fd[0]);
 	close(fd[1]);
-	execve(find_path(argu[0]), argu, environ);
+	cmd_path = find_path(argu[0]);
+	if (NULL == cmd_path)
+	{
+		perror("find_path");
+		return (EXIT_FAILURE);
+	}
+	execve(cmd_path, argu, environ);
 	perror("execve");
+	free(cmd_path);
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
