@@ -18,15 +18,14 @@ static char	*find_path(char *cmd)
 	i = 0;
 	while (ft_memcmp(environ[i], "PATH", 4))
 		i++;
-	str = ft_memchr(environ[i - 1], '/', 10);
+	str = ft_memchr(environ[i - 1], '/', ft_strlen(environ[i - 1]));
 	path = ft_split(str, ':');
 	if (NULL == path)
 		return(NULL);
 	i = -1;
 	while (path[++i])
 	{
-		cmd = prefix_str(cmd, '/');
-		str = ft_strjoin(path[i], cmd);
+		str = ft_strjoinjoin(path[i], "/", cmd);
 		if (NULL == str)
 			return (NULL);
 		if (0 == access(cmd, X_OK))

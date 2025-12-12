@@ -10,8 +10,8 @@ OBJ_DIR = obj
 vpath %.c $(foreach dir, $(SRC_DIR), $(dir):)
 SRCS = main.c helper.c
 
-#OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
-OBJS = $(OBJ_DIR)/$(SRCS:.c=.o)
+OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
+#OBJS = $(OBJ_DIR)/$(SRCS:.c=.o)
 
 all: $(NAME)
 
