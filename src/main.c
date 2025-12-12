@@ -106,6 +106,11 @@ int	main(int argc, char **argv)
 	int	pid2;
 	int	fd[2];
 
+	if (argc != 5)
+	{
+		perror("Usage: ./pipex file1 cmd1 cmd2 file2");
+		return (EXIT_FAILURE);
+	}
 	if (0 < pipe(fd))
 		return (EXIT_FAILURE);
 	pid1 = fork();
@@ -120,7 +125,7 @@ int	main(int argc, char **argv)
 		return (do_child2(fd, argv));
 	close(fd[0]);
 	close(fd[1]);
-	waitpid(pid1, NULL, 0);
+	waitpid(pid1, NULL, 0);/*check for WIFEITED WIEXITSTATIS*/
 	waitpid(pid2, NULL, 0);
 	return (0);
 }
