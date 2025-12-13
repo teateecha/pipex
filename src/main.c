@@ -109,7 +109,7 @@ int	main(int argc, char **argv, char **env)
 
 	if (!(4 == argc || 5 == argc) || 0 != acess(argv[1], R_OK))
 	{
-		perror("Usage: ./pipex file1 cmd1 cmd2 file2");
+		perror("too many or too few arguments or no reading access to infile");
 		exit(EXIT_FAILURE);
 	}
 	if (0 < pipe(fd))

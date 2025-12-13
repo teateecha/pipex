@@ -8,7 +8,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 vpath %.c $(foreach dir, $(SRC_DIR), $(dir):)
-SRCS = main.c helper.c
+SRCS = main.c helper.c cleanup.c
 
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
 #OBJS = $(OBJ_DIR)/$(SRCS:.c=.o)
