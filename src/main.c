@@ -7,9 +7,7 @@
 #include "../libft/libft.h"
 #include "../libpipex.h"
 
-extern char	**environ;
-
-static char	*find_path(char *cmd)
+static char	*find_path(char *cmd, char **env)
 {
 	char	**paths;
 	char	*path_env;
@@ -47,7 +45,7 @@ static char	*find_path(char *cmd)
 	return (NULL);
 }
 
-static int	do_child1(int fd[2], char **argv)
+static int	do_child1(int fd[2], char **argv, char **env)
 {
 	char	**argu;
 	char	*cmd_path;
@@ -59,7 +57,7 @@ static int	do_child1(int fd[2], char **argv)
 		return (EXIT_FAILURE);
 	close(fd[0]);
 	close(fd[1]);
-	cmd_path = find_path(argu[0]);
+	cmd_path = find_path(argu[0], env);
 	if (NULL == cmd_path)
 	{
 		perror("find_path");
@@ -71,7 +69,7 @@ static int	do_child1(int fd[2], char **argv)
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
-static int	do_child2(int fd[2], char **argv)
+static int	do_child2(int fd[2], char **argv, char **env)
 {
 	int		fd_file;
 	char	**argu;
@@ -88,7 +86,7 @@ static int	do_child2(int fd[2], char **argv)
 	close(fd_file);
 	close(fd[0]);
 	close(fd[1]);
-	cmd_path = find_path(argu[0]);
+	cmd_path = find_path(argu[0], env);
 	if (NULL == cmd_path)
 	{
 		perror("find_path");
@@ -100,15 +98,16 @@ static int	do_child2(int fd[2], char **argv)
 	return (EXIT_FAILURE);/*todo exit*/
 }
 
-int	main(int argc, char **argv)
+int	main(int argc, char **argv, char **env)
 {
 	int	pid1;
 	int	pid2;
 	int	fd[2];
 	int	*wait_child1;
 	int	*wait_child2;
+	int	status_Code;
 
-	if (argc != 5)
+	if (argc != 5 || acess(argv[1], R_OK))
 	{
 		perror("Usage: ./pipex file1 cmd1 cmd2 file2");
 		return (EXIT_FAILURE);
@@ -119,17 +118,20 @@ int	main(int argc, char **argv)
 	if (0 > pid1)
 		return (EXIT_FAILURE);
 	if (0 == pid1)
-		return (do_child1(fd, argv));
+		return (do_child1(fd, argv), env);
 	pid2 = fork();
 	if (0 > pid2)
 		return (EXIT_FAILURE);
 	if (0 == pid2)
-		return (do_child2(fd, argv));
+		return (do_child2(fd, argv), env);
 	close(fd[0]);
 	close(fd[1]);
+	status_Code = 0;
 	waitpid(pid1, wait_child1, 0);
+	if (WIFEXITED(wait_child1))
+		status_Code = WEXITSTATUS(wait_child1);
 	waitpid(pid2, wait_child2, 0);
-	if (WIFEXITED(wait_child1) || WIFEXITED(wait_child2))
-		status_Code = WEXITSTATUS(wait_child1) + WEXITSTATUS(wait_child2);
-	return (wait_child1 | wait_chid2);
+	if (WIFEXITED(wait_child2))
+		status_Code = WEXITSTATUS(wait_child2);
+	return (status_Code);
 }
