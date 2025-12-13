@@ -1,11 +1,9 @@
-#include <stdlib.h>
 #include <stdio.h> /*for perror*/
-#include <unistd.h>/*for access*/
-#include <fcntl.h>/*for open*/
+#include <fcntl.h>/*for open flags*/
 #include <time.h>
 #include <sys/wait.h>/*for WIFEXITED*/
-#include "../libft/libft.h"
 #include "../libpipex.h"
+#include <errno.h>
 
 static char	*find_path(char *cmd, char **env)
 {

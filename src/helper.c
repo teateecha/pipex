@@ -1,11 +1,17 @@
-#include <stdlib.h>
-// #include <stdio.h>
-// #include <unistd.h>/*for access*/
 // #include <fcntl.h>/*for open*/
 // #include <time.h>
 // #include <sys/wait.h>/*for WIFEXITED*/
-#include "../libft/libft.h"
+#include "../libpipex.h"
 
+void	init_data(t_data *data, char **env)
+{
+	if (!data)
+		return;
+	data->arr = NULL;
+	data->path = NULL;
+	data->infile_fd = -1;
+	data->outfile_fd = -1;
+}
 
 char	**find_arg(char *cmd, char *append)
 {

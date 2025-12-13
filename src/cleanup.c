@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdio.h> /*for perror*/
 #include "../libpipex.h"
 
 /* free owned resources but do NOT call exit */
