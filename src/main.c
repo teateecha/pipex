@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <stdio.h>
+#include <stdio.h> /*for perror*/
 #include <unistd.h>/*for access*/
 #include <fcntl.h>/*for open*/
 #include <time.h>
@@ -15,11 +15,11 @@ static char	*find_path(char *cmd, char **env)
 	int		i;
 
 	i = 0;
-	while (environ[i] && ft_memcmp(environ[i], "PATH=", 5) != 0)
+	while (env[i] && ft_memcmp(env[i], "PATH=", 5) != 0)
 		i++;
-	if (!environ[i])
+	if (!env[i])
 		return (NULL);
-	path_env = environ[i] + ft_strlen("PATH=");
+	path_env = env[i] + ft_strlen("PATH=");
 	paths = ft_split(path_env, ':');
 	if (NULL == paths)
 		return (NULL);
@@ -52,21 +52,21 @@ static int	do_child1(int fd[2], char **argv, char **env)
 
 	argu = find_arg(argv[2], argv[1]);
 	if (NULL == argu)
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	if (0 > dup2(fd[1], STDOUT_FILENO))
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	close(fd[0]);
 	close(fd[1]);
 	cmd_path = find_path(argu[0], env);
 	if (NULL == cmd_path)
 	{
 		perror("find_path");
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
-	execve(cmd_path, argu, environ);
+	execve(cmd_path, argu, env);
 	perror("execve");
 	free(cmd_path);
-	return (EXIT_FAILURE);/*todo exit*/
+	exit(EXIT_FAILURE);/*todo exit*/
 }
 
 static int	do_child2(int fd[2], char **argv, char **env)
@@ -77,12 +77,12 @@ static int	do_child2(int fd[2], char **argv, char **env)
 
 	argu = find_arg(argv[3], NULL);
 	if (0 > dup2(fd[0], STDIN_FILENO))
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	fd_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (0 > fd_file)
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	if (0 > dup2(fd_file, STDOUT_FILENO))
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	close(fd_file);
 	close(fd[0]);
 	close(fd[1]);
@@ -90,12 +90,12 @@ static int	do_child2(int fd[2], char **argv, char **env)
 	if (NULL == cmd_path)
 	{
 		perror("find_path");
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
-	execve(cmd_path, argu, environ);
+	execve(cmd_path, argu, env);
 	perror("execve");
 	free(cmd_path);
-	return (EXIT_FAILURE);/*todo exit*/
+	exit(EXIT_FAILURE);/*todo exit*/
 }
 
 int	main(int argc, char **argv, char **env)
@@ -107,21 +107,21 @@ int	main(int argc, char **argv, char **env)
 	int	*wait_child2;
 	int	status_Code;
 
-	if (argc != 5 || acess(argv[1], R_OK))
+	if (!(4 == argc || 5 == argc) || 0 != acess(argv[1], R_OK))
 	{
 		perror("Usage: ./pipex file1 cmd1 cmd2 file2");
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 	if (0 < pipe(fd))
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	pid1 = fork();
 	if (0 > pid1)
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	if (0 == pid1)
 		return (do_child1(fd, argv), env);
 	pid2 = fork();
 	if (0 > pid2)
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	if (0 == pid2)
 		return (do_child2(fd, argv), env);
 	close(fd[0]);
