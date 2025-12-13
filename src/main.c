@@ -11,10 +11,10 @@ extern char	**environ;
 
 static char	*find_path(char *cmd)
 {
-	char    **paths;
-	char    *path_env;
-	char    *candidate;
-	int     i;
+	char	**paths;
+	char	*path_env;
+	char	*candidate;
+	int		i;
 
 	i = 0;
 	while (environ[i] && ft_memcmp(environ[i], "PATH=", 5) != 0)
@@ -105,6 +105,8 @@ int	main(int argc, char **argv)
 	int	pid1;
 	int	pid2;
 	int	fd[2];
+	int	*wait_child1;
+	int	*wait_child2;
 
 	if (argc != 5)
 	{
@@ -125,7 +127,9 @@ int	main(int argc, char **argv)
 		return (do_child2(fd, argv));
 	close(fd[0]);
 	close(fd[1]);
-	waitpid(pid1, NULL, 0);/*check for WIFEITED WIEXITSTATIS*/
-	waitpid(pid2, NULL, 0);
-	return (0);
+	waitpid(pid1, wait_child1, 0);
+	waitpid(pid2, wait_child2, 0);
+	if (WIFEXITED(wait_child1) || WIFEXITED(wait_child2))
+		status_Code = WEXITSTATUS(wait_child1) + WEXITSTATUS(wait_child2);
+	return (wait_child1 | wait_chid2);
 }
