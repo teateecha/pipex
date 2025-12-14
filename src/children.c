@@ -1,10 +1,6 @@
 #include "../libpipex.h"
 #include <fcntl.h>/*for open*/
 
-
-
-
-
 void	do_child1(t_data *data, char **argv, char **env)
 {
 	if (0 != access(argv[1], R_OK))
@@ -15,7 +11,11 @@ void	do_child1(t_data *data, char **argv, char **env)
 	data->infile_fd = open(argv[1], O_RDONLY);
 	if (data->infile_fd < 0)
 		cleanup_and_exit(EXIT_FAILURE, "open infile", data);
-	get_args(data, argv[2], argv[1]);
+	dup2(data->infile_fd, STDIN_FILENO);
+	close(data->infile_fd);
+	data->arr = ft_split(argv[2], ' ');
+	if (NULL == data->arr)
+		cleanup_and_exit(EXIT_FAILURE, "ft_split failed", data);
 	get_path(data, env);
 	execve(data->path, data->arr, env);
 	cleanup_and_exit(EXIT_FAILURE, "child1 failed", data);

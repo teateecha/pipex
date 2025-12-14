@@ -9,12 +9,12 @@
 /* data container used across the program */
 typedef struct s_data
 {
-	char	**arr;/* argv/command split (owned) */
-	char	*path;/* constructed exec path (owned) */
+	char	**arr;
+	char	*path;
 	char	**paths;
-	int		fdpipe[2];/* pipe fds (-1 if unused) */
-	int		infile_fd;/* input fd (-1 if unused) */
-	int		outfile_fd;/* output fd (-1 if unused) */
+	int		fdpipe[2];
+	int		infile_fd;
+	int		outfile_fd;
 }			t_data;
 
 
@@ -31,5 +31,4 @@ void	cleanup_and_exit(int exit_code, const char *msg, t_data *res);
 int		cleanup_and_return(int exit_code, const char *msg, t_data *res);
 char	*ft_strjoinjoin(char const *s1, char const *s2, char const *s3);
 void	get_path(t_data *data, char **env);
-void	get_args(t_data *data, char *cmd, char *file);
 #endif
