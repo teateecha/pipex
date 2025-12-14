@@ -13,11 +13,11 @@ static void	cleanup_resources(t_data *res)
 		free(res->path);
 		res->path = NULL;
 	}
-	// if (res->pids)
-	// {
-	// 	free(res->pids);
-	// 	res->pids = NULL;
-	// }
+	if (res->paths)
+	{
+		ft_free_arr(res->paths);
+		res->paths = NULL;
+	}
 	if (res->infile_fd > 2)
 	{
 		close(res->infile_fd);
@@ -30,7 +30,6 @@ static void	cleanup_resources(t_data *res)
 	}
 }
 
-/* cleanup and return an error code to caller (prefer in helpers) */
 int	cleanup_and_return(int exit_code, const char *msg, t_data *res)
 {
 	if (msg)

@@ -1,44 +1,4 @@
-// #include <fcntl.h>/*for open*/
-// #include <time.h>
-// #include <sys/wait.h>/*for WIFEXITED*/
 #include "../libpipex.h"
-
-void	init_data(t_data *data, char **env)
-{
-	if (!data)
-		return;
-	data->arr = NULL;
-	data->path = NULL;
-	data->infile_fd = -1;
-	data->outfile_fd = -1;
-}
-
-char	**find_arg(char *cmd, char *append)
-{
-	char	**new_args;
-	char	**arguments;
-	int		i;
-
-	arguments = ft_split(cmd, ' ');
-	if (NULL == arguments)
-		return (NULL);
-	if (NULL == append)
-		return (arguments);
-	i = 0;
-	while (arguments[i])
-		i++;
-	new_args = (char **)malloc(sizeof(char *) * (i + 2));
-	if (NULL == new_args)
-		return(ft_free_arr(arguments), NULL);
-	i = -1;
-	while(arguments[++i])
-		new_args[i] = arguments[i];
-	new_args[i++] = append;
-	new_args[i] = NULL;
-	free(arguments);
-	arguments = NULL;
-	return (new_args);
-}
 
 static void	ft_copy_part(char *dst, char const *src, size_t *index)
 {

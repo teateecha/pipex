@@ -5,131 +5,62 @@
 #include "../libpipex.h"
 #include <errno.h>
 
-static char	*find_path(char *cmd, char **env)
+static void	init_data(t_data *data, char **env)
 {
-	char	**paths;
-	char	*path_env;
-	char	*candidate;
-	int		i;
-
-	i = 0;
-	while (env[i] && ft_memcmp(env[i], "PATH=", 5) != 0)
-		i++;
-	if (!env[i])
-		return (NULL);
-	path_env = env[i] + ft_strlen("PATH=");
-	paths = ft_split(path_env, ':');
-	if (NULL == paths)
-		return (NULL);
-	i = 0;
-	while (paths[i])
-	{
-		candidate = ft_strjoinjoin(paths[i], "/", cmd);
-		if (NULL == candidate)
-		{
-			ft_free_arr(paths);
-			return (NULL);
-		}
-		if (access(candidate, X_OK) == 0)
-		{
-			ft_free_arr(paths);
-			return (candidate);
-		}
-		free(candidate);
-		candidate = NULL;
-		i++;
-	}
-	ft_free_arr(paths);
-	return (NULL);
+	if (!data)
+		return ;
+	data->arr = NULL;
+	data->path = NULL;
+	data->paths = NULL;
+	data->fdpipe[0] = -1;
+	data->fdpipe[1] = -1;
+	data->infile_fd = -1;
+	data->outfile_fd = -1;
 }
 
-static int	do_child1(int fd[2], char **argv, char **env)
+static int	waitforchildren(t_pids pid)
 {
-	char	**argu;
-	char	*cmd_path;
+	int		status_code;
 
-	argu = find_arg(argv[2], argv[1]);
-	if (NULL == argu)
-		exit(EXIT_FAILURE);
-	if (0 > dup2(fd[1], STDOUT_FILENO))
-		exit(EXIT_FAILURE);
-	close(fd[0]);
-	close(fd[1]);
-	cmd_path = find_path(argu[0], env);
-	if (NULL == cmd_path)
-	{
-		perror("find_path");
-		exit(EXIT_FAILURE);
-	}
-	execve(cmd_path, argu, env);
-	perror("execve");
-	free(cmd_path);
-	exit(EXIT_FAILURE);/*todo exit*/
+	waitpid(pid.p[1], &pid.status[1], 0);
+	if (WIFEXITED(pid.status[1]))
+		status_code = WEXITSTATUS(pid.status[1]);
+	waitpid(pid.p[0], &pid.status[0], 0);
+	if (WIFEXITED(pid.status[0]))
+		status_code = WEXITSTATUS(pid.status[0]);
+	return (status_code);
 }
 
-static int	do_child2(int fd[2], char **argv, char **env)
+static void	parent(t_data *data, t_pids *pid, char **argv, char **env)
 {
-	int		fd_file;
-	char	**argu;
-	char	*cmd_path;
-
-	argu = find_arg(argv[3], NULL);
-	if (0 > dup2(fd[0], STDIN_FILENO))
-		exit(EXIT_FAILURE);
-	fd_file = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (0 > fd_file)
-		exit(EXIT_FAILURE);
-	if (0 > dup2(fd_file, STDOUT_FILENO))
-		exit(EXIT_FAILURE);
-	close(fd_file);
-	close(fd[0]);
-	close(fd[1]);
-	cmd_path = find_path(argu[0], env);
-	if (NULL == cmd_path)
-	{
-		perror("find_path");
-		exit(EXIT_FAILURE);
-	}
-	execve(cmd_path, argu, env);
-	perror("execve");
-	free(cmd_path);
-	exit(EXIT_FAILURE);/*todo exit*/
+	if (0 > pipe(data->fdpipe))
+		cleanup_and_exit(EXIT_FAILURE, "pipe failed", data);
+	pid->p[1] = fork();
+	if (0 > pid->p[1])
+		cleanup_and_exit(EXIT_FAILURE, "fork of child 1 failed", data);
+	if (0 == pid->p[1])
+		do_child1(data, argv, env);
+	pid->p[0] = fork();
+	if (0 > pid->p[0])
+		cleanup_and_exit(EXIT_FAILURE, "fork of child 2 failed", data);
+	if (0 == pid->p[0])
+		do_child2(data, argv, env);
+	close(data->fdpipe[0]);
+	close(data->fdpipe[1]);
 }
 
-int	main(int argc, char **argv, char **env)
+int	main(int argc, char **argv, char **envp)
 {
-	int	pid1;
-	int	pid2;
-	int	fd[2];
-	int	*wait_child1;
-	int	*wait_child2;
-	int	status_Code;
+	t_data	data;
+	t_pids	pid;
+	int		status_code;
 
-	if (!(4 == argc || 5 == argc) || 0 != acess(argv[1], R_OK))
-	{
-		perror("too many or too few arguments or no reading access to infile");
-		exit(EXIT_FAILURE);
-	}
-	if (0 < pipe(fd))
-		exit(EXIT_FAILURE);
-	pid1 = fork();
-	if (0 > pid1)
-		exit(EXIT_FAILURE);
-	if (0 == pid1)
-		return (do_child1(fd, argv), env);
-	pid2 = fork();
-	if (0 > pid2)
-		exit(EXIT_FAILURE);
-	if (0 == pid2)
-		return (do_child2(fd, argv), env);
-	close(fd[0]);
-	close(fd[1]);
-	status_Code = 0;
-	waitpid(pid1, wait_child1, 0);
-	if (WIFEXITED(wait_child1))
-		status_Code = WEXITSTATUS(wait_child1);
-	waitpid(pid2, wait_child2, 0);
-	if (WIFEXITED(wait_child2))
-		status_Code = WEXITSTATUS(wait_child2);
-	return (status_Code);
+	if (!(argc == 5 || argc == 4))
+		cleanup_and_exit(EXIT_FAILURE, "usage", NULL);
+	if ((5 == argc && 0 != access(argv[4], W_OK)))
+		cleanup_and_exit(EXIT_FAILURE, "file access denied", NULL);
+	init_data(&data, envp);
+	parent(&data, &pid, argv, envp);
+	status_code = waitforchildren(pid);
+	return (cleanup_and_return(status_code, NULL, &data));
 }
