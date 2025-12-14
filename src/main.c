@@ -22,6 +22,7 @@ static int	waitforchildren(t_pids pid)
 {
 	int		status_code;
 
+	status_code = 0;
 	waitpid(pid.p[1], &pid.status[1], 0);
 	if (WIFEXITED(pid.status[1]))
 		status_code = WEXITSTATUS(pid.status[1]);
@@ -59,7 +60,6 @@ int	main(int argc, char **argv, char **envp)
 		cleanup_and_exit(EXIT_FAILURE, "usage", NULL);
 	init_data(&data, envp);
 	parent(&data, &pid, argv, envp);
-	status_code = 0;
 	status_code = waitforchildren(pid);
 	return (cleanup_and_return(status_code, NULL, &data));
 }

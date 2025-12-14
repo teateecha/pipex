@@ -1,4 +1,5 @@
 #include "../libpipex.h"
+#include <stdio.h> /*for perror*/
 
 // static void	copy_arguments(t_data *data, char **argu, char *file)
 // {
@@ -66,8 +67,7 @@ void	get_path(t_data *data, char **env)
 
 	data->paths = extract_paths_from_env(env, data);
 	if (NULL == data->paths)
-		cleanup_and_exit(EXIT_FAILURE, "split failed or no PATH var", data);
-	i = 0;
+		cleanup_and_exit(127, "no PATH in environment", data);
 	while (data->paths[i])
 	{
 		data->path = ft_strjoinjoin(data->paths[i], "/", data->arr[0]);
@@ -79,5 +79,7 @@ void	get_path(t_data *data, char **env)
 		data->path = NULL;
 		i++;
 	}
-	cleanup_and_exit(EXIT_FAILURE, "no executable path found", data);
+	if (data->arr && data->arr[0])
+		perror(data->arr[0]);
+	cleanup_and_exit(127, NULL, data);
 }
