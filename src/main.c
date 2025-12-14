@@ -57,10 +57,9 @@ int	main(int argc, char **argv, char **envp)
 
 	if (!(argc == 5 || argc == 4))
 		cleanup_and_exit(EXIT_FAILURE, "usage", NULL);
-	if ((5 == argc && 0 != access(argv[4], W_OK)))
-		cleanup_and_exit(EXIT_FAILURE, "file access denied", NULL);
 	init_data(&data, envp);
 	parent(&data, &pid, argv, envp);
+	status_code = 0;
 	status_code = waitforchildren(pid);
 	return (cleanup_and_return(status_code, NULL, &data));
 }

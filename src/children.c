@@ -23,8 +23,6 @@ void	do_child1(t_data *data, char **argv, char **env)
 
 void	do_child2(t_data *data, char **argv, char **env)
 {
-	if (argv[4] && 0 != access(argv[4], W_OK))
-		cleanup_and_exit(EXIT_FAILURE, "outfile not writable", data);
 	dup2(data->fdpipe[0], STDIN_FILENO);
 	close(data->fdpipe[1]);
 	close(data->fdpipe[0]);
@@ -40,4 +38,3 @@ void	do_child2(t_data *data, char **argv, char **env)
 	execve(data->path, data->arr, env);
 	cleanup_and_exit(EXIT_FAILURE, "child2 failed", data);
 }
-/*todo: check what checks i should do in the child*/

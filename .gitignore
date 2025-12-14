@@ -4,4 +4,6 @@
 a.out
 subject.md
 file*
+newfile
 .vs*
+/42_pipex_tester/
