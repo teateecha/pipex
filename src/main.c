@@ -56,8 +56,8 @@ int	main(int argc, char **argv, char **envp)
 	t_pids	pid;
 	int		status_code;
 
-	if (!(argc == 5 || argc == 4))
-		cleanup_and_exit(EXIT_FAILURE, "usage", NULL);
+	if (argc != 5)
+		cleanup_and_exit(EXIT_FAILURE, "wrong usage", NULL);
 	init_data(&data, envp);
 	parent(&data, &pid, argv, envp);
 	status_code = waitforchildren(pid);
