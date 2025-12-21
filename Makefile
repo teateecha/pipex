@@ -1,6 +1,7 @@
 NAME = pipex
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -I$(LIBFT_DIR)
+CFLAGS = -g -Wall -Wextra -Werror 
+#-I$(LIBFT_DIR)
 
 LIBFT_DIR = libft
 LIBFT_A = $(LIBFT_DIR)/libft.a
@@ -23,7 +24,7 @@ $(NAME): $(LIBFT_A) $(OBJS)
 
 #build only if OBJ_DIR exists
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) -I$(LIBFT_DIR) -c $< -o $@
+	$(CC) -c $< -o $@
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)

@@ -4,7 +4,7 @@
 # include <stdlib.h>
 # include <unistd.h>/*for close, access, open ,fork, execve, pipe, dup2*/
 # include <sys/types.h> /* for pid_t */
-# include "../libft/libft.h"
+# include "libft/libft.h"
 
 /* data container used across the program */
 typedef struct s_data

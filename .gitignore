@@ -3,8 +3,9 @@
 *.a
 a.out
 subject.md
+infile
+outfile
 file*
-newfile
 .vs*
 /42_pipex_tester/
 pipex

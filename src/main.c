@@ -1,7 +1,7 @@
 #include <stdio.h> /*for perror*/
 #include <fcntl.h>/*for open flags*/
 #include <time.h>
-#include <sys/wait.h>/*for WIFEXITED*/
+#include <sys/wait.h>/*for WIFEXITED and Sig-checks*/
 #include "../libpipex.h"
 #include <errno.h>
 
@@ -18,17 +18,18 @@ static void	init_data(t_data *data, char **env)
 	data->outfile_fd = -1;
 }
 
+/*only return the status of the last child if it failed.*/
 static int	waitforchildren(t_pids pid)
 {
 	int		status_code;
 
 	status_code = 0;
 	waitpid(pid.p[1], &pid.status[1], 0);
-	if (WIFEXITED(pid.status[1]))
-		status_code = WEXITSTATUS(pid.status[1]);
 	waitpid(pid.p[0], &pid.status[0], 0);
 	if (WIFEXITED(pid.status[0]))
 		status_code = WEXITSTATUS(pid.status[0]);
+	if (WIFSIGNALED(pid.status[0]))
+		status_code = 128 + WTERMSIG(pid.status[0]);
 	return (status_code);
 }
 
